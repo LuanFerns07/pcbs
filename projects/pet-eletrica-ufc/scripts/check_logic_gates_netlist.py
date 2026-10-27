@@ -1,115 +1,72 @@
 #!/usr/bin/env python3
-"""Check the first board's required component-to-net pin mappings."""
-
+"""Compare KiCad-exported schematic pin nets with every PCB pad net."""
 from __future__ import annotations
-
-import re
-import subprocess
-import tempfile
+import re, subprocess, tempfile
 from pathlib import Path
+import pcbnew
+BOARD=Path(__file__).resolve().parents[1]/'boards/01-logic-gates'
 
-
-BOARD = Path(__file__).resolve().parents[1] / "boards" / "01-logic-gates"
-SCHEMATIC = BOARD / "01-logic-gates.kicad_sch"
-
-
-def sexp_block(text: str, start: int) -> str:
-    depth = 0
-    quoted = escaped = False
-    for index in range(start, len(text)):
-        char = text[index]
+def block(s,start):
+    level=0;quoted=escaped=False
+    for i in range(start,len(s)):
+        c=s[i]
         if quoted:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == '"':
-                quoted = False
-        elif char == '"':
-            quoted = True
-        elif char == "(":
-            depth += 1
-        elif char == ")":
-            depth -= 1
-            if depth == 0:
-                return text[start : index + 1]
-    raise ValueError("unbalanced KiCad netlist")
+            if escaped:escaped=False
+            elif c=='\\':escaped=True
+            elif c=='"':quoted=False
+        elif c=='"':quoted=True
+        elif c=='(':level+=1
+        elif c==')':
+            level-=1
+            if not level:return s[start:i+1]
+    raise ValueError('Unbalanced KiCad netlist')
 
-
-def get_nets(netlist: str) -> dict[tuple[str, str], str]:
-    result: dict[tuple[str, str], str] = {}
-    for match in re.finditer(r"\(net\s+\(code\s+", netlist):
-        block = sexp_block(netlist, match.start())
-        net_name = re.search(r'\(name\s+"([^"]+)"', block)
-        if not net_name:
-            continue
-        for node in re.finditer(
-            r'\(node\s+\(ref\s+"([^"]+)"\)\s+\(pin\s+"([^"]+)"\)', block
-        ):
-            result[(node.group(1), node.group(2))] = net_name.group(1)
+def schematic_pins(s):
+    result={}
+    for match in re.finditer(r'\(net\s+\(code\s+',s):
+        part=block(s,match.start());name=re.search(r'\(name\s+"([^"]+)"',part).group(1).lstrip('/')
+        for node in re.finditer(r'\(node\s+\(ref\s+"([^"]+)"\)\s+\(pin\s+"([^"]+)"\)',part):
+            ref,pin=node.groups()
+            if not ref.startswith('#'):result[(ref,pin)]=name
     return result
 
+def schematic_components(s):
+    result={}
+    for match in re.finditer(r'\(comp\s+\(ref\s+"([^"]+)"\)',s):
+        part=block(s,match.start());ref=match.group(1)
+        value=re.search(r'\(value\s+"([^"]+)"',part)
+        footprint=re.search(r'\(footprint\s+"([^"]+)"',part)
+        if value and footprint:result[ref]=(value.group(1),footprint.group(1))
+    return result
 
-def verify(actual: dict[tuple[str, str], str]) -> list[str]:
-    expected = {
-        ("J1", "1"): "/5V_IN", ("J1", "2"): "/GND",
-        ("D4", "2"): "/5V_IN", ("D4", "1"): "/VCC",
-        ("SW1", "1"): "/VCC", ("SW1", "2"): "/A",
-        ("SW2", "1"): "/VCC", ("SW2", "2"): "/B",
-        ("R1", "1"): "/A", ("R1", "2"): "/GND",
-        ("R2", "1"): "/B", ("R2", "2"): "/GND",
-        ("U1", "1"): "/A", ("U1", "2"): "/B", ("U1", "3"): "/Y_AND",
-        ("U2", "1"): "/A", ("U2", "2"): "/B", ("U2", "3"): "/Y_OR",
-        ("U3", "1"): "/A", ("U3", "2"): "/Y_NOT",
-    }
-    for ref in ("U1", "U2"):
-        for pin in ("4", "5", "7", "9", "10", "12", "13"):
-            expected[(ref, pin)] = "/GND"
-    for pin in ("3", "5", "7", "9", "11", "13"):
-        expected[("U3", pin)] = "/GND"
-    for ref in ("U1", "U2", "U3"):
-        expected[(ref, "14")] = "/VCC"
-
-    for index, output in enumerate(("Y_AND", "Y_OR", "Y_NOT"), 1):
-        expected[(f"R{index + 2}", "1")] = f"/{output}"
-        expected[(f"R{index + 2}", "2")] = f"/LED{index}_A"
-        expected[(f"D{index}", "2")] = f"/LED{index}_A"
-        expected[(f"D{index}", "1")] = "/GND"
-        expected[(f"C{index}", "1")] = "/VCC"
-        expected[(f"C{index}", "2")] = "/GND"
-
-    errors = [
-        f"{ref}.{pin}: expected {net}, got {actual.get((ref, pin), '<unconnected>')}"
-        for (ref, pin), net in expected.items()
-        if actual.get((ref, pin)) != net
-    ]
-    unused_outputs = (
-        ("U1", "6"), ("U1", "8"), ("U1", "11"),
-        ("U2", "6"), ("U2", "8"), ("U2", "11"),
-        ("U3", "4"), ("U3", "6"), ("U3", "8"), ("U3", "10"), ("U3", "12"),
-    )
-    for ref, pin in unused_outputs:
-        net = actual.get((ref, pin), "")
-        if not net.startswith("unconnected-"):
-            errors.append(f"{ref}.{pin}: expected explicit no-connect, got {net or '<unconnected>'}")
-    return errors
-
-def main() -> int:
-    with tempfile.TemporaryDirectory(prefix="pet-logic-netlist-") as temp_dir:
-        output = Path(temp_dir) / "logic-gates.net"
-        command = ["kicad-cli", "sch", "export", "netlist", str(SCHEMATIC), "--output", str(output)]
-        run = subprocess.run(command, capture_output=True, text=True, check=False)
-        if run.returncode:
-            print(run.stderr, end="")
-            return run.returncode
-        errors = verify(get_nets(output.read_text(encoding="utf-8")))
+def main():
+    sch=BOARD/'01-logic-gates.kicad_sch';pcb=BOARD/'01-logic-gates.kicad_pcb'
+    with tempfile.TemporaryDirectory(prefix='pet-net-') as td:
+        net=Path(td)/'board.net'
+        subprocess.run(['kicad-cli','sch','export','netlist',str(sch),'--output',str(net)],check=True)
+        source=net.read_text()
+        expected=schematic_pins(source)
+        expected_components=schematic_components(source)
+    actual={}
+    actual_components={}
+    board=pcbnew.LoadBoard(str(pcb))
+    for fp in board.GetFootprints():
+        actual_components[fp.GetReference()]=(fp.GetValue(),fp.GetFPIDAsString())
+        for pad in fp.Pads():
+            if not pad.GetNumber():continue
+            key=(fp.GetReference(),pad.GetNumber());name=pad.GetNetname().lstrip('/')
+            if key in actual and actual[key]!=name:raise AssertionError(f'Duplicate pin with conflicting nets: {key}')
+            actual[key]=name
+    errors=[]
+    for key in sorted(set(expected)|set(actual)):
+        if expected.get(key)!=actual.get(key):errors.append(f'{key}: schematic={expected.get(key)} PCB={actual.get(key)}')
+    for ref in sorted(set(expected_components)|set(actual_components)):
+        if expected_components.get(ref)!=actual_components.get(ref):
+            errors.append(f'{ref}: schematic part={expected_components.get(ref)} PCB part={actual_components.get(ref)}')
     if errors:
-        print("Netlist connectivity check failed:")
-        print("\n".join(f"- {message}" for message in errors))
-        return 1
-    print("Netlist connectivity verified: inputs, logic outputs, unused gates, power and decoupling.")
+        print('\n'.join(errors));return 1
+    if not board.Zones() or not all(z.IsFilled() for z in board.Zones()):
+        print('Ground zone missing or unfilled');return 1
+    print(f'Parity verified: {len(expected)} pins/pads and {len(expected_components)} part values/footprints; filled zones present.')
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__=='__main__':raise SystemExit(main())

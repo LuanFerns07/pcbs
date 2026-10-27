@@ -1,0 +1,10 @@
+# KiCad session state and generated intermediate files
+*.kicad_prl
+fp-info-cache
+*-backups/
+*-rescue.*
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.venv/

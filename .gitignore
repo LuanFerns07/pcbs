@@ -4,6 +4,7 @@
 fp-info-cache
 *-backups/
 *-rescue.*
+*.kicad_prl
 
 # Generated unless explicitly committed
 __pycache__/
