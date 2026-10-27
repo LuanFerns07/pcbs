@@ -1,0 +1,11 @@
+# KiCad lock and temporary files
+*-cache.lib
+*.lck
+fp-info-cache
+*-backups/
+*-rescue.*
+
+# Generated unless explicitly committed
+__pycache__/
+*.py[cod]
+.venv/
