@@ -13,7 +13,7 @@ NOT: 0→1, 1→0.
 Os botões A e B são momentâneos e ativos em nível alto. Soltar os botões deve produzir nível lógico 0 por meio dos resistores de pull-down. As saídas planejadas são `Y_AND = A·B`, `Y_OR = A+B` e `Y_NOT = ¬A`, cada uma com LED indicador. O botão B não altera `Y_NOT`.
 
 ## Procedimento previsto
-Com a placa desligada, inspecione polaridades e conexões. Alimente pela entrada USB-C de 5 V, aplique cada combinação de entradas e registre os LEDs. Compare com as tabelas e discuta entradas flutuantes e inversão lógica. Este procedimento só deve ser executado após revisão do projeto e montagem física.
+Com a placa desligada, inspecione polaridades e conexões. Conecte uma fonte regulada e limitada em corrente de 5 V à entrada identificada, respeitando a polaridade. Aplique cada combinação de entradas e registre os LEDs. Compare com as tabelas e discuta entradas flutuantes e inversão lógica. Este procedimento só deve ser executado após revisão do projeto e montagem física.
 
 Este roteiro é preliminar: a placa ainda não foi desenhada, validada, fabricada ou montada.
 
