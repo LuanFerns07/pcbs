@@ -1,18 +1,22 @@
-# Instruções para agentes
+# Repository instructions
 
-## Projeto
-Desenvolvemos hardware didático aberto para o PET Engenharia Elétrica UFC. Preserve os arquivos-fonte KiCad, explique decisões elétricas em `PROJECT_CONTEXT.md` e nunca declare validação, fabricação ou teste físico sem evidência reproduzível.
+## Organization
 
-## Fluxo de trabalho
-- Antes de editar, confira o estado Git e os arquivos existentes.
-- Use scripts determinísticos para tarefas repetitivas; preserve os comandos e dependências.
-- Para alterações elétricas, confira datasheets, ERC, DRC e conectividade; um DRC limpo não prova funcionamento.
-- Não faça commits sem autorização expressa do mantenedor.
-- Nunca invente logs ou resultados de engenharia. Registre indisponibilidade de ferramentas como limitação.
-- Preserve SVGs e cores oficiais; até serem fornecidos, use identidade provisória claramente identificada.
-- Mantenha a documentação didática acessível em português e os identificadores técnicos em inglês quando útil.
+- Keep each independent hardware effort under `projects/<project>/` with its own context, documentation, libraries and boards.
+- Put a resource in `shared/` only when it is reusable without a project-specific dependency. Repository-wide conventions belong in `docs/`.
+- Preserve native KiCad source files; do not version generated caches or temporary lock files.
 
-## KiCad
-- O alvo é KiCad 10 quando suportado; valide a versão real disponível antes de usar recursos específicos.
-- Prefira arquivos-fonte e CLI para validação/exportação; use API Python/IPC apenas após confirmar disponibilidade e compatibilidade.
-- Antes de liberar fabricação, verifique ERC/DRC, contorno, furos, polaridades, BOM, Gerbers e drill files.
+## Git
+
+- Inspect `git status`, existing files, branch and remotes before editing. Preserve user changes and never run destructive Git operations.
+- Do not commit without explicit maintainer authorization. If authorized, write every commit message in English, preferably Conventional Commits, inspect the staged diff, and do not include pre-existing user changes.
+- Never change remotes unnecessarily or force-push. Do not push without explicit authorization.
+
+## Engineering and documentation
+
+- Target KiCad 10 where supported, but check the installed version before using version-specific features. Prefer native source and CLI; use `pcbnew` or IPC only after checking version compatibility.
+- For electrical changes, consult component datasheets and inspect ERC, DRC, connectivity, polarity, board outline, holes and manufacturing exports. A clean DRC alone does not prove function.
+- Never claim validation, fabrication or physical testing without reproducible evidence. Record unavailable tools as limitations.
+- Keep educational explanations accessible in Portuguese and technical identifiers in English where useful. Explain electrical decisions in each project's `PROJECT_CONTEXT.md`.
+- Use deterministic local scripts for repeated work and report summaries rather than flooding context with generated output. Use MCP or GUI interactions only when they materially help inspection or editing.
+- Preserve official SVGs and colors. Until supplied, label any visual identity as provisional; do not invent an official logo.

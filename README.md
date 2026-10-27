@@ -1,22 +1,15 @@
-# PET Hardware
+# Open Hardware Projects
 
-Coleção modular de placas educacionais de eletrônica digital do PET Engenharia Elétrica UFC. O projeto começa com uma placa de portas lógicas e evolui em direção a uma ALU e a um computador didático.
+Repositório para projetos independentes de hardware aberto. O primeiro é a coleção didática do PET Engenharia Elétrica UFC, em [`projects/pet-eletrica-ufc/`](projects/pet-eletrica-ufc/).
 
-## Estado inicial
+## Organização
 
-O ambiente detectado é Debian GNU/Linux 13 (Trixie), kernel 6.12, Python 3.13.5. KiCad e `kicad-cli` não estão instalados; o repositório APT configurado oferece KiCad 9.0.2. A versão upstream consultada é 10.0.6. Não havia arquivos SVG, imagem de referência nem repositório Git preexistentes.
+- `projects/`: projetos autocontidos, cada um com contexto, documentação e placas.
+- `shared/`: automação, bibliotecas e templates realmente reutilizáveis.
+- `docs/`: convenções aplicáveis ao repositório inteiro.
 
-Não há ainda resultados ERC/DRC nem projeto fabricável. A criação e validação dos projetos KiCad dependerá da instalação do KiCad e do fornecimento dos ativos oficiais da identidade visual.
+Cada placa deve manter seus arquivos-fonte KiCad e documentação junto ao projeto. Relatórios e arquivos de fabricação só devem ser apresentados como resultados quando gerados e revisados com ferramentas reais. Consulte [AGENTS.md](AGENTS.md) antes de contribuir.
 
-## Estrutura
+## Ambiente observado
 
-- `identity/`: logotipos, paleta e guia visual
-- `libraries/`: símbolos e footprints locais
-- `templates/`: convenções reutilizáveis de placa
-- `scripts/`: automação reprodutível
-- `boards/logic-gates/`: primeira placa
-- `docs/`: decisões e material didático
-- `manufacturing/`: saídas verificadas de fabricação
-- `reports/`: relatórios gerados por ferramentas reais
-
-Ver [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) e [AGENTS.md](AGENTS.md).
+No levantamento de 2026-10-27, o worktree estava limpo em `main`, acompanhando `origin/main`. O ambiente é Debian GNU/Linux 13.7, com KiCad, `kicad-cli` e `pcbnew` 9.0.2 instalados. A interface gráfica não foi validada nesta sessão sem `DISPLAY`. Consulte [`projects/pet-eletrica-ufc/PROJECT_CONTEXT.md`](projects/pet-eletrica-ufc/PROJECT_CONTEXT.md) para os limites e decisões do projeto PET.
