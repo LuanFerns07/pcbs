@@ -1,0 +1,6 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "PET_Logic") (type "KiCad")
+    (uri "${KIPRJMOD}/../../libraries/symbols/PET_Logic.kicad_sym")
+    (options "") (descr "PET UFC educational logic IC symbols"))
+)
