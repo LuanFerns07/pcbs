@@ -11,6 +11,14 @@ run(['kicad-cli','pcb','export','svg','--mode-single','-l','F.SilkS,F.Mask,Edge.
      '--page-size-mode','2','--exclude-drawing-sheet','--black-and-white',
      '--output',str(SVG),str(OUT)],check=True)
 run(['convert','-background','white',str(SVG),'-resize','1000x',str(PNG)],check=True)
+SVG.unlink()
+back_svg=RENDERS/'01-logic-gates-back.svg'
+run(['kicad-cli','pcb','export','svg','--mode-single','-l','B.SilkS,B.Mask,Edge.Cuts',
+     '--page-size-mode','2','--exclude-drawing-sheet','--black-and-white','--mirror',
+     '--output',str(back_svg),str(OUT)],check=True)
+run(['convert','-background','white',str(back_svg),'-resize','1000x',
+     str(RENDERS/'01-logic-gates-back.png')],check=True)
+back_svg.unlink()
 source=Image.open(PNG).convert('RGBA')
 w,h=source.size
 canvas=Image.new('RGBA',(1320,930),(238,242,246,255))
@@ -74,4 +82,5 @@ for ref,(value,fp,x,y,angle,nets) in items.items():
 font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',19)
 draw.text((47,874),'Illustrative 3D preview from current KiCad PCB; component shapes are approximate.',font=font,fill=(48,57,67,255))
 canvas.convert('RGB').save(RENDERS/'01-logic-gates-3d-preview.png',quality=95)
+canvas.convert('RGB').save(RENDERS/'01-logic-gates-3d.png',quality=95)
 print('Saved 2D and illustrative 3D previews.')

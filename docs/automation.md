@@ -14,7 +14,7 @@ MCP/IPC não é dependência inicial: a CLI e `pcbnew` estão disponíveis local
 - `kicad-cli version`: 9.0.2.
 - `pcbnew.GetBuildVersion()`: 9.0.2+dfsg-1.
 - O pacote Debian configurado oferece 9.0.2; não se misturaram repositórios ou pacotes externos para instalar KiCad 10.
-- `kicad-cli --help` confirmou os grupos `sch`, `pcb`, `fp`, `sym` e `jobset`; `sch` lista `erc`/`export`, `pcb` lista `drc`/`export`/`render`. O esquemático da placa 01 foi exportado como netlist e passou ERC com zero violações; ainda não existe PCB para validar por DRC.
+- `kicad-cli --help` confirmou os grupos `sch`, `pcb`, `fp`, `sym` e `jobset`; `sch` lista `erc`/`export` e `pcb` lista `drc`/`export`. A revisão A da placa 01, agora com transistores discretos, passou ERC, DRC e paridade esquemático/PCB sem violações nem pads abertos. `projects/pet-eletrica-ufc/scripts/validate_logic_gates.sh` reproduz geração, netlist, ERC, DRC e BOM; `export_logic_gates.sh` produz os arquivos de fabricação. O teste físico ainda está pendente.
 - A invocação da interface `kicad --version` sem `DISPLAY` falhou ao inicializar GTK e não é considerada verificação da GUI.
 
 Repetir o levantamento com `shared/scripts/environment_report.sh`. As versões podem mudar; registrar novas observações com data e saída reproduzível.
