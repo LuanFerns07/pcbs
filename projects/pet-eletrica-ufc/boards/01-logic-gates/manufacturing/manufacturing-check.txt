@@ -1,0 +1,2 @@
+KiCad board: 123.0 x 155.1 mm; 2 copper layers; 44 footprints; 118 drilled pads; 6 vias; 1 filled GND zone; 20 required exports present.
+ERC and DRC reports show zero violations. Physical prototype untested.

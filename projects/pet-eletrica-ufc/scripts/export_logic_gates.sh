@@ -24,6 +24,7 @@ kicad-cli pcb export svg "$board" --mode-single --layers F.SilkS,F.Mask,Edge.Cut
 kicad-cli pcb export svg "$board" --mode-single --layers B.SilkS,B.Mask,Edge.Cuts --black-and-white --exclude-drawing-sheet --mirror --page-size-mode 2 --output "$out/back-layout.svg"
 sed -i 's/[[:blank:]]*$//' "$out/front-layout.svg" "$out/back-layout.svg"
 kicad-cli pcb export step "$board" --output "$out/01-logic-gates.step" --force
+sed -i 's/[[:blank:]]*$//' "$out/01-logic-gates.step"
 kicad-cli pcb export glb "$board" --include-silkscreen --include-soldermask --output "$out/01-logic-gates.glb" --force
 cp "$board_dir/BOM.csv" "$out/BOM.csv"
 cp "$board_dir/reports/ERC.rpt" "$out/ERC.rpt"
